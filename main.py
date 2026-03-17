@@ -12,7 +12,7 @@ from evaluation.metrics import edge_density
 detector = Detector(conf=CONFIDENCE)
 fps_counter = FPS()
 
-# Video capture
+# Video
 cap = cv2.VideoCapture(VIDEO_PATH)
 
 while True:
@@ -22,15 +22,13 @@ while True:
 
     # ---------------- ORIGINAL ----------------
     original = frame.copy()
-
-    # Detect on original
     orig_detect = detector.detect(original.copy())
 
     # ---------------- ROBUST PIPELINE ----------------
     # Step 1: Enhancement
     enhanced = enhance(frame)
 
-    # Step 2: Add noise (optional)
+    # Step 2: Add noise (simulate disturbance)
     if USE_NOISE_ATTACK:
         attacked = add_noise(enhanced)
     else:
@@ -39,16 +37,20 @@ while True:
     # Step 3: Detection
     robust_detect = detector.detect(attacked)
 
-    # Step 4: Lane detection
-    robust_final = detect_lanes(robust_detect)
+    # Step 4: Adaptive lane detection (OPTION 2)
+    if USE_NOISE_ATTACK:
+        # Skip lane detection in bad conditions
+        robust_final = robust_detect
+    else:
+        # Apply lane detection only in good conditions
+        robust_final = detect_lanes(robust_detect)
 
     # ---------------- METRICS ----------------
     fps = fps_counter.tick()
-
     edge_orig = edge_density(original)
     edge_enh = edge_density(enhanced)
 
-    # ---------------- TEXT OVERLAY ----------------
+    # ---------------- TEXT ----------------
     cv2.putText(orig_detect, "Original", (10, 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
@@ -65,7 +67,6 @@ while True:
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
 
     # ---------------- DISPLAY ----------------
-    # Resize for side-by-side comparison
     top = cv2.resize(orig_detect, (640, 360))
     bottom = cv2.resize(robust_final, (640, 360))
 
