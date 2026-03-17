@@ -1,0 +1,6 @@
+VIDEO_PATH = "data/sample_video.mp4"
+USE_NOISE_ATTACK = True
+SHOW_ENHANCEMENT_COMPARISON = True
+SAVE_OUTPUT = False
+OUTPUT_PATH = "outputs/output.mp4"
+CONFIDENCE = 0.25
